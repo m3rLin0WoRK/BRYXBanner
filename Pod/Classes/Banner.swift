@@ -60,7 +60,11 @@ open class Banner: UIView {
     @objc open var adjustsStatusBarStyle = false
     
     /// Wheter the banner should appear at the top or the bottom of the screen. Defaults to `.Top`.
-    open var position = BannerPosition.top
+    open var position = BannerPosition.top {
+        didSet {
+            adjustSwipeGesture()
+        }
+    }
 
     /// How 'springy' the banner should display. Defaults to `.Slight`
     open var springiness = BannerSpringiness.slight
@@ -213,7 +217,12 @@ open class Banner: UIView {
     private func addGestureRecognizers() {
         addGestureRecognizer(UITapGestureRecognizer(target: self, action:  #selector(Banner.didTap(_:))))
         let swipe = UISwipeGestureRecognizer(target: self, action: #selector(Banner.didSwipe(_:)))
-        swipe.direction = .up
+        switch position {
+        case .top:
+            swipe.direction = .up
+        case .bottom:
+            swipe.direction = .down
+        }
         addGestureRecognizer(swipe)
     }
     
@@ -325,6 +334,18 @@ open class Banner: UIView {
         contentTopOffsetConstraint.constant = 0
         minimumHeightConstraint.constant = 0
       }
+    }
+    
+    private func adjustSwipeGesture() {
+        //Swipe Gesture
+        if let swipe = self.gestureRecognizers?.filter({ $0 is UISwipeGestureRecognizer }).first as? UISwipeGestureRecognizer {
+            switch position {
+            case .top:
+                swipe.direction = .up
+            case .bottom:
+                swipe.direction = .down
+            }
+        }
     }
   
     /// Shows the banner. If a view is specified, the banner will be displayed at the top of that view, otherwise at top of the top window. If a `duration` is specified, the banner dismisses itself automatically after that duration elapses.
