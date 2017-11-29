@@ -103,6 +103,8 @@ open class Banner: UIView {
     
     /// A block to call after the banner has finished dismissing and is off screen.
     @objc open var didDismissBlock: (() -> ())?
+
+    @objc open var didTapCloseButtonBlock: (() -> ())?
     
     /// Whether or not the banner should dismiss itself when the user taps. Defaults to `true`.
     @objc open var dismissesOnTap = true
@@ -226,6 +228,7 @@ open class Banner: UIView {
     }
     
     @objc internal func closeButtonPressed() {
+        didTapCloseButtonBlock?()
         dismiss()
     }
     
