@@ -135,6 +135,14 @@ open class Banner: UIView {
         return label
         }()
     
+    @objc open let closeButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("X", for: .normal)
+        button.addTarget(self, action: #selector(Banner.closeButtonPressed), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     /// The image on the left of the banner.
     @objc let image: UIImage?
     
@@ -154,6 +162,8 @@ open class Banner: UIView {
         }
     }
     
+    private var showCloseButton: Bool = false
+    
     /// A Banner with the provided `title`, `subtitle`, and optional `image`, ready to be presented with `show()`.
     ///
     /// - parameter title: The title of the banner. Optional. Defaults to nil.
@@ -161,9 +171,10 @@ open class Banner: UIView {
     /// - parameter image: The image on the left of the banner. Optional. Defaults to nil.
     /// - parameter backgroundColor: The color of the banner's background view. Defaults to `UIColor.blackColor()`.
     /// - parameter didTapBlock: An action to be called when the user taps on the banner. Optional. Defaults to `nil`.
-    @objc public required init(title: String? = nil, subtitle: String? = nil, image: UIImage? = nil, backgroundColor: UIColor = UIColor.black, didTapBlock: (() -> ())? = nil) {
+    @objc public required init(title: String? = nil, subtitle: String? = nil, image: UIImage? = nil, showCloseButton: Bool = false, backgroundColor: UIColor = UIColor.black, didTapBlock: (() -> ())? = nil) {
         self.didTapBlock = didTapBlock
         self.image = image
+        self.showCloseButton = showCloseButton
         super.init(frame: CGRect.zero)
         resetShadows()
         addGestureRecognizers()
@@ -214,6 +225,10 @@ open class Banner: UIView {
         }
     }
     
+    @objc internal func closeButtonPressed() {
+        dismiss()
+    }
+    
     private func addGestureRecognizers() {
         addGestureRecognizer(UITapGestureRecognizer(target: self, action:  #selector(Banner.didTap(_:))))
         let swipe = UISwipeGestureRecognizer(target: self, action: #selector(Banner.didSwipe(_:)))
@@ -250,7 +265,8 @@ open class Banner: UIView {
             "imageView": imageView,
             "labelView": labelView,
             "titleLabel": titleLabel,
-            "detailLabel": detailLabel
+            "detailLabel": detailLabel,
+            "closeButton": closeButton
         ]
         translatesAutoresizingMaskIntoConstraints = false
         addSubview(backgroundView)
@@ -278,7 +294,20 @@ open class Banner: UIView {
             imageView.addConstraint(imageView.constraintWithAttribute(.height, .equal, to: .width))
             leftConstraintText = "[imageView]"
         }
-        let constraintFormat = "H:\(leftConstraintText)-(15)-[labelView]-(8)-|"
+        
+        let rightConstraintText: String
+        if showCloseButton {
+            contentView.addSubview(closeButton)
+            contentView.addConstraint(closeButton.constraintWithAttribute(.trailing, .equal, to: contentView, constant: -8))
+            contentView.addConstraint(closeButton.constraintWithAttribute(.centerY, .equal, to: contentView))
+            contentView.addConstraint(closeButton.constraintWithAttribute(.width, .equal, to: 30))
+            contentView.addConstraint(closeButton.constraintWithAttribute(.height, .equal, to: .width))
+            rightConstraintText = "[closeButton]"
+        } else {
+            rightConstraintText = "|"
+        }
+        
+        let constraintFormat = "H:\(leftConstraintText)-(15)-[labelView]-(8)-\(rightConstraintText)"
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addConstraints(NSLayoutConstraint.defaultConstraintsWithVisualFormat(constraintFormat, views: views))
         contentView.addConstraints(NSLayoutConstraint.defaultConstraintsWithVisualFormat("V:|-(>=1)-[labelView]-(>=1)-|", views: views))
