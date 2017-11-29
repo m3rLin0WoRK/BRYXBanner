@@ -364,7 +364,7 @@ open class Banner: UIView {
         minimumHeightConstraint.constant = statusBarSize.height > 0 ? minimumHeight : 40
       } else {
         contentTopOffsetConstraint.constant = 0
-        minimumHeightConstraint.constant = 0
+        minimumHeightConstraint.constant = minimumHeight
       }
     }
     
